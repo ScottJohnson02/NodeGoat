@@ -57,8 +57,8 @@ function SessionHandler(db) {
 
     userDAO.validateLogin(userName, password, function(err, user) {
       var errorMessage = "Invalid username and/or password";
-      var invalidUserNameErrorMessage = "Invalid username";
-      var invalidPasswordErrorMessage = "Invalid password";
+      var invalidUserNameErrorMessage = "Invalid login";
+      var invalidPasswordErrorMessage = "Invalid login";
       if (err) {
         if (err.noSuchUser) {
           // console.log('Error: attempt to login with invalid user: ', userName);
@@ -85,7 +85,7 @@ function SessionHandler(db) {
           return res.render("login", {
             userName: userName,
             password: "",
-            loginError: invalidPasswordErrorMessage
+            loginError: errorMessage
             //Fix for A2-2 Broken Auth - Uses identical error for both username, password error
             // loginError: errorMessage
 
@@ -106,13 +106,15 @@ function SessionHandler(db) {
       // Fix the problem by regenerating a session in each login
       // by wrapping the below code as a function callback for the method req.session.regenerate()
       // i.e:
-      // `req.session.regenerate(function() {})`
-      req.session.userId = user._id;
-      if (user.isAdmin) {
-        return res.redirect("/benefits");
-      } else {
-        return res.redirect("/dashboard");
-      }
+      req.session.regenerate(function() {
+        req.session.userId = user._id;
+        if (user.isAdmin) {
+          return res.redirect("/benefits");
+        } else {
+          return res.redirect("/dashboard");
+        }
+      })
+
     });
   };
 
@@ -140,12 +142,11 @@ function SessionHandler(db) {
     var FNAME_RE = /^.{1,100}$/;
     var LNAME_RE = /^.{1,100}$/;
     var EMAIL_RE = /^[\S]+@[\S]+\.[\S]+$/;
-    var PASS_RE = /^.{1,20}$/;
-    /*
+
     //Fix for A2-2 - Broken Authentication -  requires stronger password
     //(at least 8 characters with numbers and both lowercase and uppercase letters.)
-    var PASS_RE =/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
-    */
+    var PASS_RE = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
+
 
     errors.userNameError = "";
     errors.firstNameError = "";
@@ -156,15 +157,15 @@ function SessionHandler(db) {
     errors.emailError = "";
 
     if (!USER_RE.test(userName)) {
-      errors.userNameError = "Invalid user name.";
+      errors.userNameError = "Invalid creditals.";
       return false;
     }
     if (!FNAME_RE.test(firstName)) {
-      errors.firstNameError = "Invalid first name.";
+      errors.firstNameError = "Invalid creditals.";
       return false;
     }
     if (!LNAME_RE.test(lastName)) {
-      errors.lastNameError = "Invalid last name.";
+      errors.lastNameError = "Invalid creditals.";
       return false;
     }
     if (!PASS_RE.test(password)) {
