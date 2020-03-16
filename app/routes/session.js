@@ -243,7 +243,20 @@ function SessionHandler(db) {
       return res.render("signup", errors);
     }
   };
-
+  this.isAdminUserMiddleware = function(req, res, next) {
+    if (req.session.userId) {
+      userDAO.getUserById(req.session.userId, function(err, user) {
+        if (user && user.isAdmin) {
+          next();
+        } else {
+          return res.redirect("/login");
+        }
+      });
+    } else {
+      console.log("redirecting to login");
+      return res.redirect("/login");
+    }
+  };
   this.displayWelcomePage = function(req, res, next) {
     var userId;
 
